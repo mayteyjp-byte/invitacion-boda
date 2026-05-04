@@ -58,16 +58,19 @@ export default function Home() {
   const openInvitation = () => {
     setEnvelopeAnimating(true);
 
-    // Autoplay inmediato al presionar el botón de abrir invitación
+    // Autoplay directo desde el clic del usuario
     if (audioRef.current) {
-      audioRef.current.volume = 0.32;
-      audioRef.current.play()
+      audioRef.current.currentTime = 0;
+      audioRef.current.volume = 0.35;
+      audioRef.current
+        .play()
         .then(() => setMusicPlaying(true))
         .catch(() => setMusicPlaying(false));
     }
 
     setTimeout(() => {
       setOpened(true);
+
       setTimeout(() => {
         document.querySelectorAll(".fadeIn").forEach((el) => {
           const obs = new IntersectionObserver(
@@ -100,8 +103,14 @@ export default function Home() {
     });
   };
 
-  const buildFormLink = (confirmacion: string, mensaje: string) => {
-    return `https://docs.google.com/forms/d/e/1FAIpQLScD4yrdd8uT1F7iMzA9yERterSHbEAPPDQfhhdgAYf-Q4U0sw/viewform?usp=pp_url&entry.856620481=${encodeURIComponent(guestName)}&entry.234824417=${encodeURIComponent(guestId)}&entry.677535393=${encodeURIComponent(confirmacion)}&entry.234447408=${encodeURIComponent(mensaje)}`;
+  const buildFormLink = (confirmation: string, message: string) => {
+    return `https://docs.google.com/forms/d/e/1FAIpQLScD4yrdd8uT1F7iMzA9yERterSHbEAPPDQfhhdgAYf-Q4U0sw/viewform?usp=pp_url&entry.856620481=${encodeURIComponent(
+      guestName
+    )}&entry.234824417=${encodeURIComponent(
+      guestId
+    )}&entry.677535393=${encodeURIComponent(
+      confirmation
+    )}&entry.234447408=${encodeURIComponent(message)}`;
   };
 
   const handleRSVP = async (attending: boolean) => {
@@ -110,11 +119,13 @@ export default function Home() {
     setRsvpSent(true);
     setRsvpLoading(false);
 
-    const mensaje = attending
-      ? `Confirmo mi asistencia. Pase válido para ${passes} persona(s).`
-      : "Lamentablemente no podré asistir, pero les envío mis mejores deseos.";
+    const formLink = buildFormLink(
+      attending ? "SÍ" : "NO",
+      attending
+        ? `Confirmo mi asistencia. Pase válido para ${passes} persona(s).`
+        : "Lamentablemente no podré asistir, pero les envío mis mejores deseos."
+    );
 
-    const formLink = buildFormLink(attending ? "SÍ" : "NO", mensaje);
     setTimeout(() => window.open(formLink, "_blank"), 500);
   };
 
@@ -122,6 +133,7 @@ export default function Home() {
     if (!wishMessage.trim()) return;
     await new Promise((r) => setTimeout(r, 700));
     setWishSent(true);
+
     const formLink = buildFormLink("SÍ", wishMessage);
     window.open(formLink, "_blank");
   };
@@ -511,7 +523,7 @@ export default function Home() {
           <div className="rsvpConfirmed fadeIn">
             <div className="rsvpHeart">💕</div>
             <h3>¡Gracias, {guestName}!</h3>
-            <p>Tu respuesta ha sido enviada. Te redirigiremos a WhatsApp para completar tu confirmación.</p>
+            <p>Tu respuesta se abrirá ya llena en el formulario. Solo presiona Enviar.</p>
           </div>
         )}
       </section>
@@ -897,15 +909,21 @@ export default function Home() {
           transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
         .galleryItem:hover { transform: translateY(-6px); box-shadow: 0 30px 70px rgba(106,44,74,0.28); }
-        .galleryLeft img, .galleryRight img { height: 300px; }
+        .galleryLeft img, .galleryRight img { height: 240px; }
         .galleryCenter {
-          transform: translateY(-12px);
-          box-shadow: 0 30px 70px rgba(106,44,74,0.28);
+          transform: translateY(-8px);
+          box-shadow: 0 24px 55px rgba(106,44,74,0.22);
           border: 3px solid var(--mauve-light);
         }
-        .galleryCenter img { height: 400px; }
-        .galleryCenter:hover { transform: translateY(-18px); }
-        .galleryItem img { width: 100%; object-fit: cover; display: block; transition: transform 0.6s ease; }
+        .galleryCenter img { height: 300px; }
+        .galleryCenter:hover { transform: translateY(-12px); }
+        .galleryItem img {
+          width: 100%;
+          object-fit: contain;
+          display: block;
+          transition: transform 0.6s ease;
+          background: #FDF9F5;
+        }
         .galleryItem:hover img { transform: scale(1.04); }
         .galleryOverlay {
           position: absolute; inset: 0;
@@ -953,10 +971,20 @@ export default function Home() {
           transform: translateX(-50%);
         }
         .timelineItem {
-          display: grid; grid-template-columns: 1fr 60px 1fr;
-          gap: 20px; align-items: center; margin-bottom: 36px;
+          display: grid;
+          grid-template-columns: 130px 60px 1fr;
+          gap: 24px;
+          align-items: center;
+          margin-bottom: 36px;
         }
-        .timelineTime { font-family: "Cormorant Garamond", serif; font-size: 20px; font-weight: 600; color: var(--ciruela); text-align: right; }
+        .timelineTime {
+          font-family: "Cormorant Garamond", serif;
+          font-size: 20px;
+          font-weight: 600;
+          color: var(--ciruela);
+          text-align: right;
+          white-space: nowrap;
+        }
         .timelineDot {
           width: 52px; height: 52px; border-radius: 50%;
           background: linear-gradient(135deg, var(--mauve), var(--ciruela));
@@ -1137,8 +1165,8 @@ export default function Home() {
 
           /* Timeline */
           .timeline::before { left: 18px; }
-          .timelineItem { grid-template-columns: 18px 1fr; grid-template-rows: auto auto; gap: 8px 14px; }
-          .timelineTime { grid-column: 2; grid-row: 1; text-align: left; font-size: 15px; }
+          .timelineItem { grid-template-columns: 46px 1fr; grid-template-rows: auto auto; gap: 8px 14px; }
+          .timelineTime { grid-column: 2; grid-row: 1; text-align: left; font-size: 15px; white-space: nowrap; }
           .timelineDot  { grid-column: 1; grid-row: 1/3; width: 36px; height: 36px; font-size: 15px; align-self: start; justify-self: start; }
           .timelineContent { grid-column: 2; grid-row: 2; }
 
